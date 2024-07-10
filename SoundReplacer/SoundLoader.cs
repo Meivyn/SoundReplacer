@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using IPA.Utilities;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -11,80 +9,66 @@ namespace SoundReplacer
 {
     internal static class SoundLoader
     {
-        public static List<string> GlobalSoundList = new List<string>();
+        public const string NoSoundID = "None";
+        public const string DefaultSoundID = "Default";
+        public static readonly string[] DefaultSoundList = { NoSoundID, DefaultSoundID };
 
-        private static AudioClip? _cachedEmpty;
+        public static string[] SoundList = DefaultSoundList;
+        private static AudioClip? _emptyAudioClip;
 
-        public static void GetSoundLists()
+        public static void PopulateSoundList()
         {
-            GlobalSoundList.Add("None");
-            GlobalSoundList.Add("Default");
-
-            var folderPath = Environment.CurrentDirectory + "\\UserData\\SoundReplacer";
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            var files = Directory.GetFiles(folderPath);
-            foreach (var file in files)
+            try
             {
-                var fileInfo = new FileInfo(file);
-                if (fileInfo.Extension == ".ogg" ||
-                    fileInfo.Extension == ".mp3" ||
-                    fileInfo.Extension == ".wav")
-                {
-                    GlobalSoundList.Add(fileInfo.Name);
-                }
+                var directoryInfo = new DirectoryInfo(Path.Combine(UnityGame.UserDataPath, nameof(SoundReplacer)));
+                directoryInfo.Create();
+                SoundList = SoundList
+                    .Concat(directoryInfo
+                        .EnumerateFiles("*", SearchOption.AllDirectories)
+                        .Where(f => f.Extension is ".ogg" or ".mp3" or ".wav")
+                        .Select(f => f.Name))
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.Error($"Could not create sound list. {ex}");
             }
         }
 
         private static string GetFullPath(string name)
         {
-            var path = Environment.CurrentDirectory + "\\UserData\\SoundReplacer\\" + name;
-            var fileInfo = new FileInfo(path);
-            return fileInfo.FullName;
+            return Path.Combine(UnityGame.UserDataPath, nameof(SoundReplacer), name);
         }
 
-        private static UnityWebRequest GetRequest(string fullPath)
+        private static AudioType GetAudioTypeFromPath(string filePath)
         {
-            var fileUrl = "file:///" + fullPath;
-            var fileInfo = new FileInfo(fullPath);
-            var extension = fileInfo.Extension;
-            switch (extension)
+            var extension = Path.GetExtension(filePath);
+            return extension switch
             {
-                case ".ogg":
-                    return UnityWebRequestMultimedia.GetAudioClip(fileUrl, AudioType.OGGVORBIS);
-                case ".mp3":
-                    return UnityWebRequestMultimedia.GetAudioClip(fileUrl, AudioType.MPEG);
-                case ".wav":
-                    return UnityWebRequestMultimedia.GetAudioClip(fileUrl, AudioType.WAV);
-                default:
-                    return UnityWebRequestMultimedia.GetAudioClip(fileUrl, AudioType.UNKNOWN);
+                _ when extension.Equals(".ogg", StringComparison.OrdinalIgnoreCase) => AudioType.OGGVORBIS,
+                _ when extension.Equals(".mp3", StringComparison.OrdinalIgnoreCase) => AudioType.MPEG,
+                _ when extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) => AudioType.WAV,
+                _ => AudioType.UNKNOWN
+            };
+        }
+
+        private static void SetConfigToDefault(string configName)
+        {
+            var currentConfig = Plugin.Config;
+            foreach (var fieldInfo in currentConfig.GetType().GetFields())
+            {
+                if ((string)fieldInfo.GetValue(currentConfig) == configName)
+                {
+                    fieldInfo.SetValue(currentConfig, DefaultSoundID);
+                    break;
+                }
             }
         }
 
-        private static void ReplaceMissing(string name)
-        {
-            const string text = "Default";
-            if (Plugin.CurrentConfig.GoodHitSound == name)
-                Plugin.CurrentConfig.GoodHitSound = text;
-            if (Plugin.CurrentConfig.BadHitSound == name)
-                Plugin.CurrentConfig.BadHitSound = text;
-            if (Plugin.CurrentConfig.ClickSound == name)
-                Plugin.CurrentConfig.ClickSound = text;
-            if (Plugin.CurrentConfig.FailSound == name)
-                Plugin.CurrentConfig.FailSound = text;
-            if (Plugin.CurrentConfig.SuccessSound == name)
-                Plugin.CurrentConfig.SuccessSound = text;
-            if (Plugin.CurrentConfig.MenuMusic == name)
-                Plugin.CurrentConfig.MenuMusic = text;
-        }
-
-        public static AudioClip LoadAudioClip(string name)
+        public static AudioClip? LoadAudioClip(string name)
         {
             var fullPath = GetFullPath(name);
-            var request = GetRequest(fullPath);
-
-            AudioClip? loadedAudio = null;
+            var request = UnityWebRequestMultimedia.GetAudioClip(FileHelpers.GetEscapedURLForFilePath(fullPath), GetAudioTypeFromPath(fullPath));
             var task = request.SendWebRequest();
 
             // while I would normally kill people for this
@@ -92,24 +76,25 @@ namespace SoundReplacer
             // basically instant success or error
             while (!task.isDone) { }
 
-            if (request.result is not UnityWebRequest.Result.Success)
+            if (request.result != UnityWebRequest.Result.Success)
             {
-                Plugin.Log.Error($"Failed to load file {name} with error {request.error}");
-                ReplaceMissing(name);
-                return GetEmptyClip();
+                Plugin.Log.Error($"Failed to load file {fullPath} with error {request.error}");
+                SetConfigToDefault(name);
+
+                return null;
             }
 
-            loadedAudio = DownloadHandlerAudioClip.GetContent(request);
-            return loadedAudio;
+            return DownloadHandlerAudioClip.GetContent(request);
         }
 
-        public static AudioClip GetEmptyClip()
+        public static AudioClip GetEmptyAudioClip()
         {
-            if (_cachedEmpty != null)
-                return _cachedEmpty;
+            if (_emptyAudioClip != null)
+            {
+                return _emptyAudioClip;
+            }
 
-            _cachedEmpty = AudioClip.Create("Empty", 10, 1, 44100 * 2, false);
-            return _cachedEmpty;
+            return _emptyAudioClip = AudioClip.Create("Empty", 10, 1, 44100 * 2, false);
         }
     }
 }

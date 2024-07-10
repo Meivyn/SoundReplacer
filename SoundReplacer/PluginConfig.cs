@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SoundReplacer
+﻿namespace SoundReplacer
 {
     public class PluginConfig
     {
-        public string GoodHitSound = "Default";
-        public string BadHitSound = "Default";
-
-        public string MenuMusic = "Default";
-        public string ClickSound = "Default";
-        
-        public string SuccessSound = "Default";
-        public string FailSound = "Default";
+        public string GoodHitSound = SoundLoader.DefaultSoundID;
+        public string BadHitSound = SoundLoader.DefaultSoundID;
+        public string MenuMusic = SoundLoader.DefaultSoundID;
+        public string ClickSound = SoundLoader.DefaultSoundID;
+        public string SuccessSound = SoundLoader.DefaultSoundID;
+        public string FailSound = SoundLoader.DefaultSoundID;
     }
 }

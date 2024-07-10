@@ -1,47 +1,38 @@
 ﻿using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using HarmonyLib;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using IPALogger = IPA.Logging.Logger;
+using IPA.Logging;
+using SiraUtil.Zenject;
+using SoundReplacer.Installers;
 
 namespace SoundReplacer
 {
-    [Plugin(RuntimeOptions.SingleStartInit)]
+    [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
-        internal static Plugin Instance { get; private set; } = null!;
-        internal static IPALogger Log { get; private set; } = null!;
-        internal static PluginConfig CurrentConfig { get; private set; } = null!;
+        internal static Logger Log { get; private set; } = null!;
+        internal static PluginConfig Config { get; private set; } = null!;
 
         [Init]
-        public void Init(Config config, IPALogger logger)
+        public Plugin(Logger logger, Config config, Zenjector zenjector)
         {
-            Instance = this;
             Log = logger;
-            CurrentConfig = config.Generated<PluginConfig>();
-
-            SoundLoader.GetSoundLists();
-            var harmony = new Harmony("com.otiosum.BeatSaber.SoundReplacer");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Config = config.Generated<PluginConfig>();
+            zenjector.UseLogger(logger);
+            zenjector.Install<MenuInstaller>(Location.Menu);
+            zenjector.Install<GameInstaller>(Location.Player);
         }
 
-        [OnStart]
-        public void OnApplicationStart()
+        [OnEnable]
+        public void OnEnable()
         {
-            new GameObject("SoundReplacerController").AddComponent<SoundReplacerController>();
+            SoundLoader.PopulateSoundList();
         }
 
-        [OnExit]
-        public void OnApplicationQuit()
+        [OnDisable]
+        public void OnDisable()
         {
-            /**/
+            SoundLoader.SoundList = SoundLoader.DefaultSoundList;
         }
     }
 }
