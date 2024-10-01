@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using SiraUtil.Affinity;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -9,17 +10,55 @@ namespace SoundReplacer.Patches
     {
         private readonly SongPreviewPlayer _songPreviewPlayer;
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
-        private readonly AudioClip[] _customClickSound = new AudioClip[1];
 
         private AudioClip[]? _originalClickSounds;
-        private AudioClip? _originalMenuMusic;
-        private AudioClip? _customMenuMusic;
+        private AudioClip[] _customClickSound;
         private string? _lastClickSelected;
+
+        private AudioClip _originalMenuMusic;
+        private AudioClip _customMenuMusic;
         private string? _lastMusicSelected;
 
         private MenuSoundsPatches(SongPreviewPlayer songPreviewPlayer)
         {
             _songPreviewPlayer = songPreviewPlayer;
+            _originalMenuMusic = songPreviewPlayer.defaultAudioClip;
+            _customMenuMusic = _emptySound;
+            _customClickSound = [_emptySound];
+        }
+
+        private AudioClip GetCustomMenuMusic()
+        {
+            if (_lastMusicSelected == Plugin.Config.MenuMusic)
+            {
+                return _customMenuMusic;
+            }
+            _lastMusicSelected = Plugin.Config.MenuMusic;
+
+            if (_customMenuMusic != _emptySound)
+            {
+                Object.Destroy(_customMenuMusic);
+            }
+
+            var menuMusic = SoundLoader.LoadAudioClip(Plugin.Config.MenuMusic);
+            return _customMenuMusic = menuMusic != null ? menuMusic : _emptySound;
+        }
+
+        private AudioClip[] GetCustomClickSound()
+        {
+            if (_lastClickSelected == Plugin.Config.ClickSound)
+            {
+                return _customClickSound;
+            }
+            _lastClickSelected = Plugin.Config.ClickSound;
+
+            foreach (var sound in _customClickSound.Where(s => s != _emptySound))
+            {
+                Object.Destroy(sound);
+            }
+
+            var clickSound = SoundLoader.LoadAudioClip(Plugin.Config.ClickSound);
+            return _customClickSound = clickSound != null ? [clickSound] : [_emptySound];
         }
 
         [AffinityPatch(typeof(BasicUIAudioManager), nameof(BasicUIAudioManager.Start))]
@@ -28,75 +67,39 @@ namespace SoundReplacer.Patches
         {
             _originalClickSounds ??= __instance._clickSounds;
 
-            if (Plugin.Config.ClickSound == SoundLoader.NoSoundID)
+            __instance._clickSounds = Plugin.Config.ClickSound switch
             {
-                _customClickSound[0] = _emptySound;
-                __instance._clickSounds = _customClickSound;
-            }
-            else if (Plugin.Config.ClickSound == SoundLoader.DefaultSoundID)
-            {
-                __instance._clickSounds = _originalClickSounds;
-            }
-            else
-            {
-                var selectedClickSound = Plugin.Config.ClickSound;
-                if (_lastClickSelected != selectedClickSound)
-                {
-                    if (_customClickSound.Length > 0 && _customClickSound[0] != _emptySound)
-                    {
-                        Object.Destroy(_customClickSound[0]);
-                    }
-
-                    var clickSound = SoundLoader.LoadAudioClip(selectedClickSound);
-                    _customClickSound[0] = clickSound != null ? clickSound : _emptySound;
-                    _lastClickSelected = selectedClickSound;
-                }
-
-                __instance._clickSounds = _customClickSound;
-            }
+                SoundLoader.NoSoundID => [_emptySound],
+                SoundLoader.DefaultSoundID => _originalClickSounds,
+                _ => GetCustomClickSound()
+            };
         }
 
         [AffinityPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.Start))]
         [AffinityPrefix]
         public void ReplaceMenuMusic()
         {
-            if (_originalMenuMusic == null)
+            _songPreviewPlayer._defaultAudioClip = Plugin.Config.MenuMusic switch
             {
-                _originalMenuMusic = _songPreviewPlayer._defaultAudioClip;
-            }
+                SoundLoader.NoSoundID => _emptySound,
+                SoundLoader.DefaultSoundID => _originalMenuMusic,
+                _ => GetCustomMenuMusic()
+            };
+        }
 
-            if (Plugin.Config.MenuMusic == SoundLoader.NoSoundID)
-            {
-                _songPreviewPlayer._defaultAudioClip = _emptySound;
-            }
-            else if (Plugin.Config.MenuMusic == SoundLoader.DefaultSoundID)
-            {
-                _songPreviewPlayer._defaultAudioClip = _originalMenuMusic;
-            }
-            else
-            {
-                var selectedMenuMusic = Plugin.Config.MenuMusic;
-                if (_lastMusicSelected != selectedMenuMusic)
-                {
-                    if (_customMenuMusic != _emptySound)
-                    {
-                        Object.Destroy(_customMenuMusic);
-                    }
-
-                    var menuMusic = SoundLoader.LoadAudioClip(selectedMenuMusic);
-                    _customMenuMusic = menuMusic != null ? menuMusic : _emptySound;
-                    _lastMusicSelected = selectedMenuMusic;
-                }
-
-                _songPreviewPlayer._defaultAudioClip = _customMenuMusic;
-            }
+        [AffinityPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.CrossfadeToNewDefault))]
+        [AffinityPrefix]
+        public bool PreventExternalDefaultMenuMusic(AudioClip audioClip)
+        {
+            // If the new default is the default menu music, cancel the method
+            return audioClip != _originalMenuMusic;
         }
 
         public void Dispose()
         {
-            if (_customClickSound.Length > 0 && _customClickSound[0] != _emptySound)
+            foreach (var clickSound in _customClickSound.Where(s => s != _emptySound))
             {
-                Object.Destroy(_customClickSound[0]);
+                Object.Destroy(clickSound);
             }
 
             if (_customMenuMusic != null)
