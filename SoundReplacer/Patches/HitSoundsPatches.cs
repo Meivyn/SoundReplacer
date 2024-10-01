@@ -1,5 +1,6 @@
-﻿using System;
-using SiraUtil.Affinity;
+﻿using SiraUtil.Affinity;
+using System;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -15,29 +16,23 @@ namespace SoundReplacer.Patches
         private AudioClip[]? _originalLongCutSounds;
         private AudioClip[]? _originalShortCutSounds;
 
-        [AffinityPatch(typeof(NoteCutSoundEffect), nameof(NoteCutSoundEffect.Awake))]
+        [AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
         [AffinityPrefix]
-        public void ReplaceBadCutSound(NoteCutSoundEffect __instance)
+        public void ReplaceSoundEffectPrefabSounds(EffectPoolsManualInstaller __instance)
         {
-            _originalBadCutSounds ??= __instance._badCutSoundEffectAudioClips;
+            var original = __instance._noteCutSoundEffectPrefab;
+            var noteCutSoundEffect = Object.Instantiate(original);
 
-            if (Plugin.Config.BadHitSound == SoundLoader.NoSoundID)
-            {
-                _customBadCutSound[0] = _emptySound;
+            _originalBadCutSounds ??= original._badCutSoundEffectAudioClips;
 
-                __instance._badCutSoundEffectAudioClips = _customBadCutSound;
-            }
-            else if (Plugin.Config.BadHitSound == SoundLoader.DefaultSoundID)
+            noteCutSoundEffect._badCutSoundEffectAudioClips = Plugin.Config.BadHitSound switch
             {
-                __instance._badCutSoundEffectAudioClips = _originalBadCutSounds;
-            }
-            else
-            {
-                var badCutSound = SoundLoader.LoadAudioClip(Plugin.Config.BadHitSound);
-                _customBadCutSound[0] = badCutSound != null ? badCutSound : _emptySound;
+                SoundLoader.NoSoundID => [_emptySound],
+                SoundLoader.DefaultSoundID => _originalBadCutSounds,
+                _ => GetSound(Plugin.Config.BadHitSound) is AudioClip a ? [a] : [_emptySound]
+            };
 
-                __instance._badCutSoundEffectAudioClips = _customBadCutSound;
-            }
+            __instance._noteCutSoundEffectPrefab = noteCutSoundEffect;
         }
 
         [AffinityPatch(typeof(NoteCutSoundEffectManager), nameof(NoteCutSoundEffectManager.Start))]
@@ -49,10 +44,8 @@ namespace SoundReplacer.Patches
 
             if (Plugin.Config.GoodHitSound == SoundLoader.NoSoundID)
             {
-                _customCutSound[0] = _emptySound;
-
-                __instance._shortCutEffectsAudioClips = _customCutSound;
-                __instance._longCutEffectsAudioClips = _customCutSound;
+                __instance._shortCutEffectsAudioClips = [_emptySound];
+                __instance._longCutEffectsAudioClips = [_emptySound];
             }
             else if (Plugin.Config.GoodHitSound == SoundLoader.DefaultSoundID)
             {
@@ -61,24 +54,28 @@ namespace SoundReplacer.Patches
             }
             else
             {
-                var cutSound = SoundLoader.LoadAudioClip(Plugin.Config.GoodHitSound);
-                _customCutSound[0] = cutSound != null ? cutSound : _emptySound;
-
-                __instance._shortCutEffectsAudioClips = _customCutSound;
-                __instance._longCutEffectsAudioClips = _customCutSound;
+                AudioClip[] sound = GetSound(Plugin.Config.GoodHitSound) is AudioClip a ? [a] : [_emptySound];
+                __instance._shortCutEffectsAudioClips = sound;
+                __instance._longCutEffectsAudioClips = sound;
             }
+        }
+
+        private static AudioClip? GetSound(string name)
+        {
+            var sound = SoundLoader.LoadAudioClip(name);
+            return sound != null ? sound : null;
         }
 
         public void Dispose()
         {
-            if (_customBadCutSound.Length > 0 && _customBadCutSound[0] != _emptySound)
+            foreach (var badCutSound in _customBadCutSound.Where(s => s != _emptySound))
             {
-                Object.Destroy(_customBadCutSound[0]);
+                Object.Destroy(badCutSound);
             }
 
-            if (_customCutSound.Length > 0 && _customCutSound[0] != _emptySound)
+            foreach (var cutSound in _customCutSound.Where(s => s != _emptySound))
             {
-                Object.Destroy(_customCutSound[0]);
+                Object.Destroy(cutSound);
             }
         }
     }
