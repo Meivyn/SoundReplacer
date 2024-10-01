@@ -3,7 +3,7 @@ using Zenject;
 
 namespace SoundReplacer.Installers
 {
-    internal class GameInstaller : Installer
+    internal class AppInstaller : Installer
     {
         public override void InstallBindings()
         {
