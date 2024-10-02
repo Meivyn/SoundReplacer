@@ -53,16 +53,16 @@ namespace SoundReplacer.Patches
             if (Plugin.Config.GoodHitSound == SoundLoader.NoSoundID)
             {
                 _customBadCutSound[0] = _emptySound;
-                __instance._noteCutSoundEffectPrefab._badCutSoundEffectAudioClips = _customBadCutSound;
+                noteCutSoundEffect._badCutSoundEffectAudioClips = _customBadCutSound;
             }
             else if (Plugin.Config.GoodHitSound == SoundLoader.DefaultSoundID)
             {
-                __instance._noteCutSoundEffectPrefab._badCutSoundEffectAudioClips = _originalBadCutSounds;
+                noteCutSoundEffect._badCutSoundEffectAudioClips = _originalBadCutSounds;
             }
             else
             {
                 _customBadCutSound[0] = GetCustomBadCutSound();
-                __instance._noteCutSoundEffectPrefab._badCutSoundEffectAudioClips = _customBadCutSound;
+                noteCutSoundEffect._badCutSoundEffectAudioClips = _customBadCutSound;
             }
 
             __instance._noteCutSoundEffectPrefab = noteCutSoundEffect;
