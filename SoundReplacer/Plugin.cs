@@ -21,6 +21,7 @@ namespace SoundReplacer
             zenjector.UseLogger(logger);
             zenjector.Install<AppInstaller>(Location.App);
             zenjector.Install<MenuInstaller>(Location.Menu);
+            zenjector.Install<GameInstaller>(Location.Player);
         }
 
         [OnEnable]
