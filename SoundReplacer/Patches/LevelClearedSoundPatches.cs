@@ -1,10 +1,11 @@
 ﻿using SiraUtil.Affinity;
+using System;
 using UnityEngine;
-using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
 
 namespace SoundReplacer.Patches
 {
-    internal class LevelClearedSoundPatches : IAffinity
+    internal class LevelClearedSoundPatches : IAffinity, IDisposable
     {
         private readonly ResultsViewController _resultsViewController;
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
@@ -80,6 +81,19 @@ namespace SoundReplacer.Patches
                 };
                 var audioPlayer = _resultsViewController._songPreviewPlayer;
                 audioPlayer.CrossfadeTo(failSound, -4f, -1f, failSound.length, null);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_customLevelClearedSound != null)
+            {
+                Object.Destroy(_customLevelClearedSound);
+            }
+
+            if (_customLevelFailedSound != null)
+            {
+                Object.Destroy(_customLevelFailedSound);
             }
         }
     }
