@@ -13,7 +13,8 @@ namespace SoundReplacer.Installers
             Container.Bind<UI.SettingsFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
             Container.BindInterfacesTo<MenuButtonManager>().AsSingle();
 
-            Container.BindInterfacesTo<MenuSoundsPatches>().AsSingle();
+            Container.BindInterfacesTo<ClickSoundPatch>().AsSingle();
+            Container.BindInterfacesTo<MenuMusicPatch>().AsSingle();
             Container.BindInterfacesTo<LevelClearedSoundPatches>().AsSingle();
         }
     }
