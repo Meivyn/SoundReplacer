@@ -59,7 +59,7 @@ namespace SoundReplacer.Patches
 
         public void Dispose()
         {
-            if (_customCutSound[0] != _emptySound)
+            if (_customCutSound[0] != null && _customCutSound[0] != _emptySound)
             {
                 Object.Destroy(_customCutSound[0]);
             }

@@ -86,12 +86,12 @@ namespace SoundReplacer.Patches
 
         public void Dispose()
         {
-            if (_customLevelClearedSound != null)
+            if (_customLevelClearedSound != null && _customLevelClearedSound != _emptySound)
             {
                 Object.Destroy(_customLevelClearedSound);
             }
 
-            if (_customLevelFailedSound != null)
+            if (_customLevelFailedSound != null && _customLevelClearedSound != _emptySound)
             {
                 Object.Destroy(_customLevelFailedSound);
             }

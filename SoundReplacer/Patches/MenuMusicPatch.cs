@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using SiraUtil.Affinity;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -10,14 +11,17 @@ namespace SoundReplacer.Patches
         private readonly SongPreviewPlayer _songPreviewPlayer;
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
 
-        private AudioClip _originalMenuMusic;
+        private readonly AudioClip _originalMenuMusic;
+        private readonly AudioClip _originalLobbyMusic;
+
         private AudioClip _customMenuMusic;
         private string? _lastMusicSelected;
 
-        private MenuMusicPatch(SongPreviewPlayer songPreviewPlayer)
+        private MenuMusicPatch(SongPreviewPlayer songPreviewPlayer, GameServerLobbyFlowCoordinator lobbyFlowCoordinator)
         {
             _songPreviewPlayer = songPreviewPlayer;
             _originalMenuMusic = songPreviewPlayer.defaultAudioClip;
+            _originalLobbyMusic = lobbyFlowCoordinator._ambienceAudioClip;
             _customMenuMusic = _emptySound;
         }
 
@@ -42,6 +46,7 @@ namespace SoundReplacer.Patches
         [AffinityPrefix]
         public void ReplaceMenuMusic()
         {
+            // Replace the default menu music on start
             _songPreviewPlayer._defaultAudioClip = Plugin.Config.MenuMusic switch
             {
                 SoundLoader.NoSoundID => _emptySound,
@@ -54,13 +59,17 @@ namespace SoundReplacer.Patches
         [AffinityPrefix]
         public bool PreventExternalDefaultMenuMusic(AudioClip audioClip)
         {
+            // If there is no custom sound in use, use the new default
+            if (_songPreviewPlayer.defaultAudioClip != _customMenuMusic && _songPreviewPlayer.defaultAudioClip != _emptySound)
+                return true;
+
             // If the new default is the default menu music, cancel the method
-            return audioClip != _originalMenuMusic;
+            return audioClip != _originalMenuMusic && audioClip != _originalLobbyMusic;
         }
 
         public void Dispose()
         {
-            if (_customMenuMusic != null)
+            if (_customMenuMusic != null && _customMenuMusic != _emptySound)
             {
                 Object.Destroy(_customMenuMusic);
             }
