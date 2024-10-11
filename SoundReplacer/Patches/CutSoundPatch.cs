@@ -7,7 +7,7 @@ namespace SoundReplacer.Patches
 {
     internal class CutSoundPatch : IInitializable, IDisposable
     {
-        private readonly NoteCutSoundEffectManager _soundEffectManager;
+        private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
 
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
         private readonly AudioClip[] _customCutSound = new AudioClip[1];
@@ -19,9 +19,10 @@ namespace SoundReplacer.Patches
 
         private CutSoundPatch(NoteCutSoundEffectManager soundEffectManager)
         {
-            _soundEffectManager = soundEffectManager;
+            _noteCutSoundEffectManager = soundEffectManager;
             _originalShortCutSounds = soundEffectManager._shortCutEffectsAudioClips;
             _originalLongCutSounds = soundEffectManager._longCutEffectsAudioClips;
+            _customCutSound[0] = _emptySound;
         }
 
         public void Initialize()
@@ -29,19 +30,19 @@ namespace SoundReplacer.Patches
             if (Plugin.Config.GoodHitSound == SoundLoader.NoSoundID)
             {
                 _customCutSound[0] = _emptySound;
-                _soundEffectManager._shortCutEffectsAudioClips = _customCutSound;
-                _soundEffectManager._longCutEffectsAudioClips = _customCutSound;
+                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _customCutSound;
+                _noteCutSoundEffectManager._longCutEffectsAudioClips = _customCutSound;
             }
             else if (Plugin.Config.GoodHitSound == SoundLoader.DefaultSoundID)
             {
-                _soundEffectManager._shortCutEffectsAudioClips = _originalShortCutSounds;
-                _soundEffectManager._longCutEffectsAudioClips = _originalLongCutSounds;
+                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _originalShortCutSounds;
+                _noteCutSoundEffectManager._longCutEffectsAudioClips = _originalLongCutSounds;
             }
             else
             {
                 _customCutSound[0] = GetCustomCutSound();
-                _soundEffectManager._shortCutEffectsAudioClips = _customCutSound;
-                _soundEffectManager._longCutEffectsAudioClips = _customCutSound;
+                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _customCutSound;
+                _noteCutSoundEffectManager._longCutEffectsAudioClips = _customCutSound;
             }
         }
 

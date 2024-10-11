@@ -61,7 +61,9 @@ namespace SoundReplacer.Patches
         {
             // If there is no custom sound in use, use the new default
             if (_songPreviewPlayer.defaultAudioClip != _customMenuMusic && _songPreviewPlayer.defaultAudioClip != _emptySound)
+            {
                 return true;
+            }
 
             // If the new default is the default menu music, cancel the method
             return audioClip != _originalMenuMusic && audioClip != _originalLobbyMusic;
@@ -69,7 +71,7 @@ namespace SoundReplacer.Patches
 
         public void Dispose()
         {
-            if (_customMenuMusic != null && _customMenuMusic != _emptySound)
+            if (_customMenuMusic != _emptySound)
             {
                 Object.Destroy(_customMenuMusic);
             }

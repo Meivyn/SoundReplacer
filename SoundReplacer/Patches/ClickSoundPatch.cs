@@ -11,29 +11,12 @@ namespace SoundReplacer.Patches
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
 
         private AudioClip[]? _originalClickSounds;
-        private AudioClip[] _customClickSound;
+        private readonly AudioClip[] _customClickSounds = new AudioClip[1];
         private string? _lastClickSelected;
 
         private ClickSoundPatch()
         {
-            _customClickSound = [_emptySound];
-        }
-
-        private AudioClip[] GetCustomClickSound()
-        {
-            if (_lastClickSelected == Plugin.Config.ClickSound)
-            {
-                return _customClickSound;
-            }
-            _lastClickSelected = Plugin.Config.ClickSound;
-
-            foreach (var sound in _customClickSound.Where(s => s != _emptySound))
-            {
-                Object.Destroy(sound);
-            }
-
-            var clickSound = SoundLoader.LoadAudioClip(Plugin.Config.ClickSound);
-            return _customClickSound = clickSound != null ? [clickSound] : [_emptySound];
+            _customClickSounds[0] = _emptySound;
         }
 
         [AffinityPatch(typeof(BasicUIAudioManager), nameof(BasicUIAudioManager.Start))]
@@ -42,19 +25,44 @@ namespace SoundReplacer.Patches
         {
             _originalClickSounds ??= __instance._clickSounds;
 
-            __instance._clickSounds = Plugin.Config.ClickSound switch
+            if (Plugin.Config.ClickSound == SoundLoader.NoSoundID)
             {
-                SoundLoader.NoSoundID => [_emptySound],
-                SoundLoader.DefaultSoundID => _originalClickSounds,
-                _ => GetCustomClickSound()
-            };
+                _customClickSounds[0] = _emptySound;
+                __instance._clickSounds = _customClickSounds;
+            }
+            else if (Plugin.Config.ClickSound == SoundLoader.DefaultSoundID)
+            {
+                __instance._clickSounds = _originalClickSounds;
+            }
+            else
+            {
+                __instance._clickSounds = GetCustomClickSounds();
+            }
+        }
+
+        private AudioClip[] GetCustomClickSounds()
+        {
+            if (_lastClickSelected == Plugin.Config.ClickSound)
+            {
+                return _customClickSounds;
+            }
+            _lastClickSelected = Plugin.Config.ClickSound;
+
+            if (_customClickSounds[0] != _emptySound)
+            {
+                Object.Destroy(_customClickSounds[0]);
+            }
+
+            var clickSound = SoundLoader.LoadAudioClip(Plugin.Config.ClickSound);
+            _customClickSounds[0] = clickSound != null ? clickSound : _emptySound;
+            return _customClickSounds;
         }
 
         public void Dispose()
         {
-            foreach (var clickSound in _customClickSound.Where(s => s != _emptySound))
+            if (_customClickSounds[0] != _emptySound)
             {
-                Object.Destroy(clickSound);
+                Object.Destroy(_customClickSounds[0]);
             }
         }
     }
