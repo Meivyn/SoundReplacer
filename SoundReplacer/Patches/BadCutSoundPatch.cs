@@ -14,6 +14,11 @@ namespace SoundReplacer.Patches
 
         private string? _lastBadCutSoundSelected;
 
+        private BadCutSoundPatch()
+        {
+            _customBadCutSounds[0] = _emptySound;
+        }
+
         [AffinityPatch(typeof(EffectPoolsManualInstaller), nameof(EffectPoolsManualInstaller.ManualInstallBindings))]
         [AffinityPrefix]
         public void ReplaceSoundEffectPrefabSounds(EffectPoolsManualInstaller __instance)
@@ -48,6 +53,11 @@ namespace SoundReplacer.Patches
                 return _customBadCutSounds[0];
             }
             _lastBadCutSoundSelected = Plugin.Config.BadHitSound;
+
+            if (_customBadCutSounds[0] != _emptySound)
+            {
+                Object.Destroy(_customBadCutSounds[0]);
+            }
 
             var badCutSound = SoundLoader.LoadAudioClip(Plugin.Config.BadHitSound);
             return badCutSound != null ? badCutSound : _emptySound;
