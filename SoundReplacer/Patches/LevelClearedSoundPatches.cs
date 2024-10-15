@@ -48,7 +48,7 @@ namespace SoundReplacer.Patches
         {
             if (_lastFailedSoundSelected == Plugin.Config.FailSound)
             {
-                return _customLevelClearedSound;
+                return _customLevelFailedSound;
             }
             _lastFailedSoundSelected = Plugin.Config.FailSound;
 
