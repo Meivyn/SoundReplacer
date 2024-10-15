@@ -17,11 +17,11 @@ namespace SoundReplacer.Patches
 
         private string? _lastCutSoundSelected;
 
-        private CutSoundPatch(NoteCutSoundEffectManager soundEffectManager)
+        private CutSoundPatch(NoteCutSoundEffectManager noteCutSoundEffectManager)
         {
-            _noteCutSoundEffectManager = soundEffectManager;
-            _originalShortCutSounds = soundEffectManager._shortCutEffectsAudioClips;
-            _originalLongCutSounds = soundEffectManager._longCutEffectsAudioClips;
+            _noteCutSoundEffectManager = noteCutSoundEffectManager;
+            _originalShortCutSounds = noteCutSoundEffectManager._shortCutEffectsAudioClips;
+            _originalLongCutSounds = noteCutSoundEffectManager._longCutEffectsAudioClips;
             _customCutSound[0] = _emptySound;
         }
 
