@@ -86,13 +86,6 @@ namespace SoundReplacer.Patches
             }
         }
 
-        [AffinityPatch(typeof(ResultsViewController), nameof(ResultsViewController.DidDeactivate))]
-        [AffinityPostfix]
-        public void ResetLevelFinishedSound()
-        {
-            _songPreviewPlayer.CrossfadeToDefault();
-        }
-
         public void Dispose()
         {
             if (_customLevelClearedSound != _emptySound)
