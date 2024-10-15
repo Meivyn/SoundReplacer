@@ -82,7 +82,7 @@ namespace SoundReplacer.Patches
                     SoundLoader.NoSoundID => _emptySound,
                     _ => _customLevelFailedSound = GetCustomLevelFailedSound()
                 };
-                _songPreviewPlayer.CrossfadeTo(failSound, -4f, -1f, failSound.length, null);
+                _songPreviewPlayer.CrossfadeTo(failSound, -4f, 0f, failSound.length, null);
             }
         }
 
