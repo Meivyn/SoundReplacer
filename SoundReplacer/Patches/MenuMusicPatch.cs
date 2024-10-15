@@ -39,7 +39,7 @@ namespace SoundReplacer.Patches
             }
 
             var menuMusic = SoundLoader.LoadAudioClip(Plugin.Config.MenuMusic);
-            return _customMenuMusic = menuMusic != null ? menuMusic : _emptySound;
+            return menuMusic != null ? menuMusic : _emptySound;
         }
 
         [AffinityPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.Start))]
@@ -51,7 +51,7 @@ namespace SoundReplacer.Patches
             {
                 SoundLoader.NoSoundID => _emptySound,
                 SoundLoader.DefaultSoundID => _originalMenuMusic,
-                _ => GetCustomMenuMusic()
+                _ => _customMenuMusic = GetCustomMenuMusic()
             };
         }
 

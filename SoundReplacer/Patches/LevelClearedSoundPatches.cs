@@ -41,7 +41,7 @@ namespace SoundReplacer.Patches
             }
 
             var levelClearedSound = SoundLoader.LoadAudioClip(Plugin.Config.SuccessSound);
-            return _customLevelClearedSound = levelClearedSound != null ? levelClearedSound : _emptySound;
+            return levelClearedSound != null ? levelClearedSound : _emptySound;
         }
 
         private AudioClip GetCustomLevelFailedSound()
@@ -58,7 +58,7 @@ namespace SoundReplacer.Patches
             }
 
             var levelFailedSound = SoundLoader.LoadAudioClip(Plugin.Config.FailSound);
-            return _customLevelFailedSound = levelFailedSound != null ? levelFailedSound : _emptySound;
+            return levelFailedSound != null ? levelFailedSound : _emptySound;
         }
 
         [AffinityPatch(typeof(ResultsViewController), nameof(ResultsViewController.DidActivate))]
@@ -71,7 +71,7 @@ namespace SoundReplacer.Patches
             {
                 SoundLoader.NoSoundID => _emptySound,
                 SoundLoader.DefaultSoundID => _originalLevelClearedSound,
-                _ => GetCustomLevelClearedSound()
+                _ => _customLevelClearedSound = GetCustomLevelClearedSound()
             };
 
             if (_resultsViewController._levelCompletionResults.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed 
@@ -80,7 +80,7 @@ namespace SoundReplacer.Patches
                 var failSound = Plugin.Config.FailSound switch
                 {
                     SoundLoader.NoSoundID => _emptySound,
-                    _ => GetCustomLevelFailedSound()
+                    _ => _customLevelFailedSound = GetCustomLevelFailedSound()
                 };
                 _songPreviewPlayer.CrossfadeTo(failSound, -4f, -1f, failSound.length, null);
             }

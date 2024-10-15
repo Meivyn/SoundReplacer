@@ -36,15 +36,16 @@ namespace SoundReplacer.Patches
             }
             else
             {
-                __instance._clickSounds = GetCustomClickSounds();
+                _customClickSounds[0] = GetCustomClickSound();
+                __instance._clickSounds = _customClickSounds;
             }
         }
 
-        private AudioClip[] GetCustomClickSounds()
+        private AudioClip GetCustomClickSound()
         {
             if (_lastClickSelected == Plugin.Config.ClickSound)
             {
-                return _customClickSounds;
+                return _customClickSounds[0];
             }
             _lastClickSelected = Plugin.Config.ClickSound;
 
@@ -54,8 +55,7 @@ namespace SoundReplacer.Patches
             }
 
             var clickSound = SoundLoader.LoadAudioClip(Plugin.Config.ClickSound);
-            _customClickSounds[0] = clickSound != null ? clickSound : _emptySound;
-            return _customClickSounds;
+            return clickSound != null ? clickSound : _emptySound;
         }
 
         public void Dispose()

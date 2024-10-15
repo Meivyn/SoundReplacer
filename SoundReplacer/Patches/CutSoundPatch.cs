@@ -55,7 +55,7 @@ namespace SoundReplacer.Patches
             _lastCutSoundSelected = Plugin.Config.GoodHitSound;
 
             var cutSound = SoundLoader.LoadAudioClip(Plugin.Config.GoodHitSound);
-            return _customCutSound[0] = cutSound != null ? cutSound : _emptySound;
+            return cutSound != null ? cutSound : _emptySound;
         }
 
         public void Dispose()
