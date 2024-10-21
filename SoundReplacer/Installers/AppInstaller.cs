@@ -3,11 +3,11 @@ using Zenject;
 
 namespace SoundReplacer.Installers
 {
-    internal class GameInstaller : Installer
+    internal class AppInstaller : Installer
     {
         public override void InstallBindings()
         {
-            Container.BindInterfacesTo<CutSoundPatch>().AsSingle();
+            Container.BindInterfacesTo<BadCutSoundPatch>().AsSingle();
         }
     }
 }
