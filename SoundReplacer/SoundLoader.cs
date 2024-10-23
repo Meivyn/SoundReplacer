@@ -94,7 +94,8 @@ namespace SoundReplacer
                 return _emptyAudioClip;
             }
 
-            return _emptyAudioClip = AudioClip.Create("Empty", 10, 1, 44100 * 2, false);
+            // Duration of 1 second as NoteCutSoundEffect could disable itself before the note is cut otherwise.
+            return _emptyAudioClip = AudioClip.Create("Empty", 44100, 1, 44100, false);
         }
     }
 }
