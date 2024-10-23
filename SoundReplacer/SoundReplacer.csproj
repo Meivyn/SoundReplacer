@@ -5,6 +5,13 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <EnableFrameworkPathOverride>true</EnableFrameworkPathOverride>
+    <FrameworkPathOverride>$(BeatSaberDir)\Beat Saber_Data\Managed</FrameworkPathOverride>
+    <NoStdLib>true</NoStdLib>
+    <MarkPackageReferencesAsExternallyResolved>false</MarkPackageReferencesAsExternallyResolved>
+    <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
+    <ImplicitlyExpandNETStandardFacades>false</ImplicitlyExpandNETStandardFacades>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,8 +55,24 @@
       <Private>false</Private>
       <Publicize>true</Publicize>
     </Reference>
+    <Reference Include="mscorlib">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\mscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="netstandard">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\netstandard.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="SiraUtil">
       <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\System.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\System.Core.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
@@ -79,14 +102,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="SoundReplacer.csproj.user" Condition="Exists('SoundReplacer.csproj.user')" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="UI\SettingsView.bsml">
       <LogicalName>SoundReplacer.SettingsView.bsml</LogicalName>
       <DependentUpon>SettingsViewController.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="SoundReplacer.csproj.user" Condition="Exists('SoundReplacer.csproj.user')" />
   </ItemGroup>
 
 </Project>
