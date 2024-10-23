@@ -1,6 +1,6 @@
-﻿using BeatSaberMarkupLanguage.Attributes;
+﻿using System.Collections.Generic;
+using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
-using System.Collections.Generic;
 using BeatSaberMarkupLanguage;
 using Zenject;
 
@@ -11,12 +11,14 @@ namespace SoundReplacer.UI
     internal class SettingsViewController : BSMLAutomaticViewController
     {
         private SongPreviewPlayer _songPreviewPlayer = null!;
+        private PluginConfig _config = null!;
         private readonly BasicUIAudioManager _basicUIAudioManager = BeatSaberUI.BasicUIAudioManager;
 
         [Inject]
-        private void Construct(SongPreviewPlayer songPreviewPlayer)
+        private void Construct(SongPreviewPlayer songPreviewPlayer, PluginConfig config)
         {
             _songPreviewPlayer = songPreviewPlayer;
+            _config = config;
         }
 
         [UIValue("good-hitsound-list")]
@@ -25,8 +27,8 @@ namespace SoundReplacer.UI
         [UIValue("good-hitsound")]
         protected string SettingCurrentGoodHitSound
         {
-            get => Plugin.Config.GoodHitSound;
-            set => Plugin.Config.GoodHitSound = value;
+            get => _config.GoodHitSound;
+            set => _config.GoodHitSound = value;
         }
 
         [UIValue("bad-hitsound-list")]
@@ -35,8 +37,8 @@ namespace SoundReplacer.UI
         [UIValue("bad-hitsound")]
         protected string SettingCurrentBadHitSound
         {
-            get => Plugin.Config.BadHitSound;
-            set => Plugin.Config.BadHitSound = value;
+            get => _config.BadHitSound;
+            set => _config.BadHitSound = value;
         }
 
         [UIValue("menu-music-list")]
@@ -45,10 +47,10 @@ namespace SoundReplacer.UI
         [UIValue("menu-music")]
         protected string SettingCurrentMenuMusic
         {
-            get => Plugin.Config.MenuMusic;
+            get => _config.MenuMusic;
             set
             {
-                Plugin.Config.MenuMusic = value;
+                _config.MenuMusic = value;
                 _songPreviewPlayer.Start();
                 _songPreviewPlayer.CrossfadeToDefault();
             }
@@ -60,10 +62,10 @@ namespace SoundReplacer.UI
         [UIValue("click-sound")]
         protected string SettingCurrentClickSound
         {
-            get => Plugin.Config.ClickSound;
+            get => _config.ClickSound;
             set
             {
-                Plugin.Config.ClickSound = value;
+                _config.ClickSound = value;
                 _basicUIAudioManager.Start();
             }
         }
@@ -74,8 +76,8 @@ namespace SoundReplacer.UI
         [UIValue("success-sound")]
         protected string SettingCurrentSuccessSound
         {
-            get => Plugin.Config.SuccessSound;
-            set => Plugin.Config.SuccessSound = value;
+            get => _config.SuccessSound;
+            set => _config.SuccessSound = value;
         }
 
         [UIValue("fail-sound-list")]
@@ -84,8 +86,8 @@ namespace SoundReplacer.UI
         [UIValue("fail-sound")]
         protected string SettingCurrentFailSound
         {
-            get => Plugin.Config.FailSound;
-            set => Plugin.Config.FailSound = value;
+            get => _config.FailSound;
+            set => _config.FailSound = value;
         }
     }
 }

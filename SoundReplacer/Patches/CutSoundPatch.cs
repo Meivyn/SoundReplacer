@@ -8,6 +8,7 @@ namespace SoundReplacer.Patches
     internal class CutSoundPatch : IInitializable, IDisposable
     {
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
+        private readonly PluginConfig _config;
 
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
         private readonly AudioClip[] _customCutSound = new AudioClip[1];
@@ -17,9 +18,10 @@ namespace SoundReplacer.Patches
 
         private string? _lastCutSoundSelected;
 
-        private CutSoundPatch(NoteCutSoundEffectManager noteCutSoundEffectManager)
+        private CutSoundPatch(NoteCutSoundEffectManager noteCutSoundEffectManager, PluginConfig config)
         {
             _noteCutSoundEffectManager = noteCutSoundEffectManager;
+            _config = config;
             _originalShortCutSounds = noteCutSoundEffectManager._shortCutEffectsAudioClips;
             _originalLongCutSounds = noteCutSoundEffectManager._longCutEffectsAudioClips;
             _customCutSound[0] = _emptySound;
@@ -27,13 +29,13 @@ namespace SoundReplacer.Patches
 
         public void Initialize()
         {
-            if (Plugin.Config.GoodHitSound == SoundLoader.NoSoundID)
+            if (_config.GoodHitSound == SoundLoader.NoSoundID)
             {
                 _customCutSound[0] = _emptySound;
                 _noteCutSoundEffectManager._shortCutEffectsAudioClips = _customCutSound;
                 _noteCutSoundEffectManager._longCutEffectsAudioClips = _customCutSound;
             }
-            else if (Plugin.Config.GoodHitSound == SoundLoader.DefaultSoundID)
+            else if (_config.GoodHitSound == SoundLoader.DefaultSoundID)
             {
                 _noteCutSoundEffectManager._shortCutEffectsAudioClips = _originalShortCutSounds;
                 _noteCutSoundEffectManager._longCutEffectsAudioClips = _originalLongCutSounds;
@@ -48,13 +50,13 @@ namespace SoundReplacer.Patches
 
         private AudioClip GetCustomCutSound()
         {
-            if (_lastCutSoundSelected == Plugin.Config.GoodHitSound)
+            if (_lastCutSoundSelected == _config.GoodHitSound)
             {
                 return _customCutSound[0];
             }
-            _lastCutSoundSelected = Plugin.Config.GoodHitSound;
+            _lastCutSoundSelected = _config.GoodHitSound;
 
-            var cutSound = SoundLoader.LoadAudioClip(Plugin.Config.GoodHitSound);
+            var cutSound = SoundLoader.LoadAudioClip(_config.GoodHitSound);
             return cutSound != null ? cutSound : _emptySound;
         }
 

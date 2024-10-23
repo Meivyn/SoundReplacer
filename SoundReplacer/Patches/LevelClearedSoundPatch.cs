@@ -1,14 +1,15 @@
-﻿using SiraUtil.Affinity;
-using System;
+﻿using System;
+using SiraUtil.Affinity;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace SoundReplacer.Patches
 {
-    internal class LevelClearedSoundPatches : IAffinity, IDisposable
+    internal class LevelClearedSoundPatch : IAffinity, IDisposable
     {
         private readonly ResultsViewController _resultsViewController;
         private readonly SongPreviewPlayer _songPreviewPlayer;
+        private readonly PluginConfig _config;
         private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
         private readonly AudioClip _originalLevelClearedSound;
 
@@ -18,10 +19,11 @@ namespace SoundReplacer.Patches
         private AudioClip _customLevelFailedSound;
         private string? _lastFailedSoundSelected;
 
-        private LevelClearedSoundPatches(ResultsViewController resultsViewController, SongPreviewPlayer songPreviewPlayer)
+        private LevelClearedSoundPatch(ResultsViewController resultsViewController, SongPreviewPlayer songPreviewPlayer, PluginConfig config)
         {
             _resultsViewController = resultsViewController;
             _songPreviewPlayer = songPreviewPlayer;
+            _config = config;
             _originalLevelClearedSound = resultsViewController._levelClearedAudioClip;
             _customLevelClearedSound = _emptySound;
             _customLevelFailedSound = _emptySound;
@@ -29,35 +31,35 @@ namespace SoundReplacer.Patches
 
         private AudioClip GetCustomLevelClearedSound()
         {
-            if (_lastClearedSoundSelected == Plugin.Config.SuccessSound)
+            if (_lastClearedSoundSelected == _config.SuccessSound)
             {
                 return _customLevelClearedSound;
             }
-            _lastClearedSoundSelected = Plugin.Config.SuccessSound;
+            _lastClearedSoundSelected = _config.SuccessSound;
 
             if (_customLevelClearedSound != _emptySound)
             {
                 Object.Destroy(_customLevelClearedSound);
             }
 
-            var levelClearedSound = SoundLoader.LoadAudioClip(Plugin.Config.SuccessSound);
+            var levelClearedSound = SoundLoader.LoadAudioClip(_config.SuccessSound);
             return levelClearedSound != null ? levelClearedSound : _emptySound;
         }
 
         private AudioClip GetCustomLevelFailedSound()
         {
-            if (_lastFailedSoundSelected == Plugin.Config.FailSound)
+            if (_lastFailedSoundSelected == _config.FailSound)
             {
                 return _customLevelFailedSound;
             }
-            _lastFailedSoundSelected = Plugin.Config.FailSound;
+            _lastFailedSoundSelected = _config.FailSound;
 
             if (_customLevelFailedSound != _emptySound)
             {
                 Object.Destroy(_customLevelFailedSound);
             }
 
-            var levelFailedSound = SoundLoader.LoadAudioClip(Plugin.Config.FailSound);
+            var levelFailedSound = SoundLoader.LoadAudioClip(_config.FailSound);
             return levelFailedSound != null ? levelFailedSound : _emptySound;
         }
 
@@ -67,17 +69,17 @@ namespace SoundReplacer.Patches
         {
             // This changes the sound that gets played when there's a new personal best
             // It may be preferable to instead play the custom sound separately
-            _resultsViewController._levelClearedAudioClip = Plugin.Config.SuccessSound switch
+            _resultsViewController._levelClearedAudioClip = _config.SuccessSound switch
             {
                 SoundLoader.NoSoundID => _emptySound,
                 SoundLoader.DefaultSoundID => _originalLevelClearedSound,
                 _ => _customLevelClearedSound = GetCustomLevelClearedSound()
             };
 
-            if (_resultsViewController._levelCompletionResults.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed 
-                && Plugin.Config.FailSound != SoundLoader.DefaultSoundID)
+            if (_resultsViewController._levelCompletionResults.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed
+                && _config.FailSound != SoundLoader.DefaultSoundID)
             {
-                var failSound = Plugin.Config.FailSound switch
+                var failSound = _config.FailSound switch
                 {
                     SoundLoader.NoSoundID => _emptySound,
                     _ => _customLevelFailedSound = GetCustomLevelFailedSound()

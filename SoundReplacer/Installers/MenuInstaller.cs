@@ -14,8 +14,8 @@ namespace SoundReplacer.Installers
             Container.BindInterfacesTo<MenuButtonManager>().AsSingle();
 
             Container.BindInterfacesTo<ClickSoundPatch>().AsSingle();
-            Container.BindInterfacesTo<MenuMusicPatch>().AsSingle();
-            Container.BindInterfacesTo<LevelClearedSoundPatches>().AsSingle();
+            Container.BindInterfacesTo<MenuMusicPatches>().AsSingle();
+            Container.BindInterfacesTo<LevelClearedSoundPatch>().AsSingle();
         }
     }
 }

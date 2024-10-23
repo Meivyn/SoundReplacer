@@ -11,15 +11,13 @@ namespace SoundReplacer
     public class Plugin
     {
         internal static Logger Log { get; private set; } = null!;
-        internal static PluginConfig Config { get; private set; } = null!;
 
         [Init]
         public Plugin(Logger logger, Config config, Zenjector zenjector)
         {
             Log = logger;
-            Config = config.Generated<PluginConfig>();
             zenjector.UseLogger(logger);
-            zenjector.Install<AppInstaller>(Location.App);
+            zenjector.Install<AppInstaller>(Location.App, config.Generated<PluginConfig>());
             zenjector.Install<MenuInstaller>(Location.Menu);
             zenjector.Install<GameInstaller>(Location.Player);
         }

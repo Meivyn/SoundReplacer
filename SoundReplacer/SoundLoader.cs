@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using BeatSaberMarkupLanguage;
 using IPA.Utilities;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -54,7 +55,8 @@ namespace SoundReplacer
 
         private static void SetConfigToDefault(string configName)
         {
-            var currentConfig = Plugin.Config;
+            // TODO: Find a saner solution than requesting the container from BSML.
+            var currentConfig = BeatSaberUI.DiContainer.Resolve<PluginConfig>();
             foreach (var fieldInfo in currentConfig.GetType().GetFields())
             {
                 if ((string)fieldInfo.GetValue(currentConfig) == configName)
@@ -76,7 +78,7 @@ namespace SoundReplacer
             // basically instant success or error
             while (!task.isDone) { }
 
-            if (request.result != UnityWebRequest.Result.Success)
+            if (request.result is not UnityWebRequest.Result.Success)
             {
                 Plugin.Log.Error($"Failed to load file {fullPath} with error {request.error}");
                 SetConfigToDefault(name);
