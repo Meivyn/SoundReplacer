@@ -31,35 +31,35 @@ namespace SoundReplacer.Patches
 
         private AudioClip GetCustomLevelClearedSound()
         {
-            if (_lastClearedSoundSelected == _config.SuccessSound)
+            if (_lastClearedSoundSelected == _config.LevelClearedSound)
             {
                 return _customLevelClearedSound;
             }
-            _lastClearedSoundSelected = _config.SuccessSound;
+            _lastClearedSoundSelected = _config.LevelClearedSound;
 
             if (_customLevelClearedSound != _emptySound)
             {
                 Object.Destroy(_customLevelClearedSound);
             }
 
-            var levelClearedSound = SoundLoader.LoadAudioClip(_config.SuccessSound);
+            var levelClearedSound = SoundLoader.LoadAudioClip(_config.LevelClearedSound);
             return levelClearedSound != null ? levelClearedSound : _emptySound;
         }
 
         private AudioClip GetCustomLevelFailedSound()
         {
-            if (_lastFailedSoundSelected == _config.FailSound)
+            if (_lastFailedSoundSelected == _config.LevelFailedSound)
             {
                 return _customLevelFailedSound;
             }
-            _lastFailedSoundSelected = _config.FailSound;
+            _lastFailedSoundSelected = _config.LevelFailedSound;
 
             if (_customLevelFailedSound != _emptySound)
             {
                 Object.Destroy(_customLevelFailedSound);
             }
 
-            var levelFailedSound = SoundLoader.LoadAudioClip(_config.FailSound);
+            var levelFailedSound = SoundLoader.LoadAudioClip(_config.LevelFailedSound);
             return levelFailedSound != null ? levelFailedSound : _emptySound;
         }
 
@@ -69,7 +69,7 @@ namespace SoundReplacer.Patches
         {
             // This changes the sound that gets played when there's a new personal best
             // It may be preferable to instead play the custom sound separately
-            _resultsViewController._levelClearedAudioClip = _config.SuccessSound switch
+            _resultsViewController._levelClearedAudioClip = _config.LevelClearedSound switch
             {
                 SoundLoader.NoSoundID => _emptySound,
                 SoundLoader.DefaultSoundID => _originalLevelClearedSound,
@@ -77,9 +77,9 @@ namespace SoundReplacer.Patches
             };
 
             if (_resultsViewController._levelCompletionResults.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed
-                && _config.FailSound != SoundLoader.DefaultSoundID)
+                && _config.LevelFailedSound != SoundLoader.DefaultSoundID)
             {
-                var failSound = _config.FailSound switch
+                var failSound = _config.LevelFailedSound switch
                 {
                     SoundLoader.NoSoundID => _emptySound,
                     _ => _customLevelFailedSound = GetCustomLevelFailedSound()

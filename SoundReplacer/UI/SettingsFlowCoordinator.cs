@@ -17,14 +17,14 @@ namespace SoundReplacer.UI
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
-            if (!firstActivation)
+            if (firstActivation)
             {
-                return;
+                SetTitle(nameof(SoundReplacer));
+                showBackButton = true;
+                ProvideInitialViewControllers(_settingsViewController);
             }
 
-            SetTitle(nameof(SoundReplacer));
-            showBackButton = true;
-            ProvideInitialViewControllers(_settingsViewController);
+            _settingsViewController.RefreshSoundList();
         }
 
         protected override void BackButtonWasPressed(ViewController topViewController)

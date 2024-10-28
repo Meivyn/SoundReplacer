@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using BeatSaberMarkupLanguage;
 using IPA.Utilities;
 using UnityEngine;
@@ -12,29 +11,9 @@ namespace SoundReplacer
     {
         public const string NoSoundID = "None";
         public const string DefaultSoundID = "Default";
-        public static readonly string[] DefaultSoundList = { NoSoundID, DefaultSoundID };
+        public static readonly string[] DefaultSounds = { NoSoundID, DefaultSoundID };
 
-        public static string[] SoundList = DefaultSoundList;
         private static AudioClip? _emptyAudioClip;
-
-        public static void PopulateSoundList()
-        {
-            try
-            {
-                var directoryInfo = new DirectoryInfo(Path.Combine(UnityGame.UserDataPath, nameof(SoundReplacer)));
-                directoryInfo.Create();
-                SoundList = SoundList
-                    .Concat(directoryInfo
-                        .EnumerateFiles("*", SearchOption.AllDirectories)
-                        .Where(f => f.Extension is ".ogg" or ".mp3" or ".wav")
-                        .Select(f => f.Name))
-                    .ToArray();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log.Error($"Could not create sound list. {ex}");
-            }
-        }
 
         private static string GetFullPath(string name)
         {

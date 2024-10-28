@@ -30,12 +30,12 @@ namespace SoundReplacer.Patches
 
             _originalBadCutSounds ??= original._badCutSoundEffectAudioClips;
 
-            if (_config.BadHitSound == SoundLoader.NoSoundID)
+            if (_config.BadCutSound == SoundLoader.NoSoundID)
             {
                 _customBadCutSounds[0] = _emptySound;
                 noteCutSoundEffect._badCutSoundEffectAudioClips = _customBadCutSounds;
             }
-            else if (_config.BadHitSound == SoundLoader.DefaultSoundID)
+            else if (_config.BadCutSound == SoundLoader.DefaultSoundID)
             {
                 noteCutSoundEffect._badCutSoundEffectAudioClips = _originalBadCutSounds;
             }
@@ -50,18 +50,18 @@ namespace SoundReplacer.Patches
 
         private AudioClip GetCustomBadCutSound()
         {
-            if (_lastBadCutSoundSelected == _config.BadHitSound)
+            if (_lastBadCutSoundSelected == _config.BadCutSound)
             {
                 return _customBadCutSounds[0];
             }
-            _lastBadCutSoundSelected = _config.BadHitSound;
+            _lastBadCutSoundSelected = _config.BadCutSound;
 
             if (_customBadCutSounds[0] != _emptySound)
             {
                 Object.Destroy(_customBadCutSounds[0]);
             }
 
-            var badCutSound = SoundLoader.LoadAudioClip(_config.BadHitSound);
+            var badCutSound = SoundLoader.LoadAudioClip(_config.BadCutSound);
             return badCutSound != null ? badCutSound : _emptySound;
         }
 
