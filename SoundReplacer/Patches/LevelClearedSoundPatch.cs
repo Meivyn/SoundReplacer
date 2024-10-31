@@ -77,14 +77,10 @@ namespace SoundReplacer.Patches
             };
 
             if (_resultsViewController._levelCompletionResults.levelEndStateType == LevelCompletionResults.LevelEndStateType.Failed
-                && _config.LevelFailedSound != SoundLoader.DefaultSoundID)
+                && _config.LevelFailedSound != SoundLoader.DefaultSoundID && _config.LevelFailedSound != SoundLoader.NoSoundID)
             {
-                var failSound = _config.LevelFailedSound switch
-                {
-                    SoundLoader.NoSoundID => _emptySound,
-                    _ => _customLevelFailedSound = GetCustomLevelFailedSound()
-                };
-                _songPreviewPlayer.CrossfadeTo(failSound, -4f, 0f, failSound.length, null);
+                _customLevelFailedSound = GetCustomLevelFailedSound();
+                _songPreviewPlayer.CrossfadeTo(_customLevelFailedSound, -4f, 0f, _customLevelFailedSound.length, null);
             }
         }
 
