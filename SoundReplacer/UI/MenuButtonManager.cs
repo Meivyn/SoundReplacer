@@ -2,7 +2,7 @@
 using BeatSaberMarkupLanguage.MenuButtons;
 using Zenject;
 
-namespace SoundReplacer.Managers
+namespace SoundReplacer.UI
 {
     internal class MenuButtonManager : IInitializable, IDisposable
     {

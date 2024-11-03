@@ -1,4 +1,3 @@
-using SoundReplacer.Managers;
 using SoundReplacer.Patches;
 using SoundReplacer.UI;
 using Zenject;

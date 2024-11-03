@@ -15,7 +15,7 @@ namespace SoundReplacer.UI
             _settingsViewController = settingsViewController;
         }
 
-        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+        public override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
             if (firstActivation)
             {
@@ -27,7 +27,7 @@ namespace SoundReplacer.UI
             _settingsViewController.RefreshSoundList();
         }
 
-        protected override void BackButtonWasPressed(ViewController topViewController)
+        public override void BackButtonWasPressed(ViewController topViewController)
         {
             _mainFlowCoordinator.DismissFlowCoordinator(this);
         }

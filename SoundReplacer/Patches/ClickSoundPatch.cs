@@ -1,23 +1,26 @@
 ﻿using System;
 using SiraUtil.Affinity;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace SoundReplacer.Patches
 {
     internal class ClickSoundPatch : IAffinity, IDisposable
     {
+        private readonly SoundLoader _soundLoader;
         private readonly PluginConfig _config;
-        private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
 
+        private readonly AudioClip[] _clickSounds = new AudioClip[1];
         private AudioClip[]? _originalClickSounds;
-        private readonly AudioClip[] _customClickSounds = new AudioClip[1];
-        private string? _lastClickSelected;
 
-        private ClickSoundPatch(PluginConfig config)
+        private ClickSoundPatch(SoundLoader soundLoader, PluginConfig config)
         {
+            _soundLoader = soundLoader;
             _config = config;
-            _customClickSounds[0] = _emptySound;
+        }
+
+        public void Dispose()
+        {
+            _soundLoader.Unload(SoundType.Click);
         }
 
         [AffinityPatch(typeof(BasicUIAudioManager), nameof(BasicUIAudioManager.Start))]
@@ -28,8 +31,8 @@ namespace SoundReplacer.Patches
 
             if (_config.ClickSound == SoundLoader.NoSoundID)
             {
-                _customClickSounds[0] = _emptySound;
-                __instance._clickSounds = _customClickSounds;
+                _clickSounds[0] = SoundLoader.Empty;
+                __instance._clickSounds = _clickSounds;
             }
             else if (_config.ClickSound == SoundLoader.DefaultSoundID)
             {
@@ -37,33 +40,8 @@ namespace SoundReplacer.Patches
             }
             else
             {
-                _customClickSounds[0] = GetCustomClickSound();
-                __instance._clickSounds = _customClickSounds;
-            }
-        }
-
-        private AudioClip GetCustomClickSound()
-        {
-            if (_lastClickSelected == _config.ClickSound)
-            {
-                return _customClickSounds[0];
-            }
-            _lastClickSelected = _config.ClickSound;
-
-            if (_customClickSounds[0] != _emptySound)
-            {
-                Object.Destroy(_customClickSounds[0]);
-            }
-
-            var clickSound = SoundLoader.LoadAudioClip(_config.ClickSound);
-            return clickSound != null ? clickSound : _emptySound;
-        }
-
-        public void Dispose()
-        {
-            if (_customClickSounds[0] != _emptySound)
-            {
-                Object.Destroy(_customClickSounds[0]);
+                _clickSounds[0] = _soundLoader.Load(_clickSounds[0], SoundType.Click);
+                __instance._clickSounds = _clickSounds;
             }
         }
     }

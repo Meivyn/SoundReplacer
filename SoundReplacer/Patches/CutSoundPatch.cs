@@ -1,39 +1,35 @@
 ﻿using System;
 using UnityEngine;
 using Zenject;
-using Object = UnityEngine.Object;
 
 namespace SoundReplacer.Patches
 {
     internal class CutSoundPatch : IInitializable, IDisposable
     {
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
+        private readonly SoundLoader _soundLoader;
         private readonly PluginConfig _config;
 
-        private readonly AudioClip _emptySound = SoundLoader.GetEmptyAudioClip();
-        private readonly AudioClip[] _customCutSound = new AudioClip[1];
-
+        private readonly AudioClip[] _cutSounds = new AudioClip[1];
         private readonly AudioClip[] _originalLongCutSounds;
         private readonly AudioClip[] _originalShortCutSounds;
 
-        private string? _lastCutSoundSelected;
-
-        private CutSoundPatch(NoteCutSoundEffectManager noteCutSoundEffectManager, PluginConfig config)
+        private CutSoundPatch(NoteCutSoundEffectManager noteCutSoundEffectManager, SoundLoader soundLoader, PluginConfig config)
         {
             _noteCutSoundEffectManager = noteCutSoundEffectManager;
+            _soundLoader = soundLoader;
             _config = config;
             _originalShortCutSounds = noteCutSoundEffectManager._shortCutEffectsAudioClips;
             _originalLongCutSounds = noteCutSoundEffectManager._longCutEffectsAudioClips;
-            _customCutSound[0] = _emptySound;
         }
 
         public void Initialize()
         {
             if (_config.CutSound == SoundLoader.NoSoundID)
             {
-                _customCutSound[0] = _emptySound;
-                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _customCutSound;
-                _noteCutSoundEffectManager._longCutEffectsAudioClips = _customCutSound;
+                _cutSounds[0] = SoundLoader.Empty;
+                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _cutSounds;
+                _noteCutSoundEffectManager._longCutEffectsAudioClips = _cutSounds;
             }
             else if (_config.CutSound == SoundLoader.DefaultSoundID)
             {
@@ -42,30 +38,15 @@ namespace SoundReplacer.Patches
             }
             else
             {
-                _customCutSound[0] = GetCustomCutSound();
-                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _customCutSound;
-                _noteCutSoundEffectManager._longCutEffectsAudioClips = _customCutSound;
+                _cutSounds[0] = _soundLoader.Load(_cutSounds[0], SoundType.Cut);
+                _noteCutSoundEffectManager._shortCutEffectsAudioClips = _cutSounds;
+                _noteCutSoundEffectManager._longCutEffectsAudioClips = _cutSounds;
             }
-        }
-
-        private AudioClip GetCustomCutSound()
-        {
-            if (_lastCutSoundSelected == _config.CutSound)
-            {
-                return _customCutSound[0];
-            }
-            _lastCutSoundSelected = _config.CutSound;
-
-            var cutSound = SoundLoader.LoadAudioClip(_config.CutSound);
-            return cutSound != null ? cutSound : _emptySound;
         }
 
         public void Dispose()
         {
-            if (_customCutSound[0] != null && _customCutSound[0] != _emptySound)
-            {
-                Object.Destroy(_customCutSound[0]);
-            }
+            _soundLoader.Unload(SoundType.Cut);
         }
     }
 }
