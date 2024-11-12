@@ -15,13 +15,18 @@ namespace SoundReplacer.UI
     {
         private SongPreviewPlayer _songPreviewPlayer = null!;
         private PluginConfig _config = null!;
-        private readonly BasicUIAudioManager _basicUIAudioManager = BeatSaberUI.BasicUIAudioManager;
+        private BasicUIAudioManager _basicUIAudioManager = null!;
 
         [Inject]
         private void Construct(SongPreviewPlayer songPreviewPlayer, PluginConfig config)
         {
             _songPreviewPlayer = songPreviewPlayer;
             _config = config;
+        }
+
+        private void Awake()
+        {
+            _basicUIAudioManager = BeatSaberUI.BasicUIAudioManager;
         }
 
         public void RefreshSoundList()
