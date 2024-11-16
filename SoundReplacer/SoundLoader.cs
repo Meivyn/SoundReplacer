@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using IPA.Utilities;
@@ -18,7 +17,7 @@ namespace SoundReplacer
         public static readonly AudioClip Empty = AudioClip.Create("Empty", 44100, 1, 44100, false);
 
         private readonly PluginConfig _config;
-        private readonly Dictionary<string, AudioClip> _cache = new();
+        private readonly ReferenceCountingCache<string, AudioClip> _referenceCountingCache = new();
 
         private SoundLoader(PluginConfig config)
         {
@@ -87,12 +86,11 @@ namespace SoundReplacer
         public AudioClip Load(AudioClip? currentSound, SoundType soundType)
         {
             var fileName = GetSoundFileName(soundType);
-            if (_cache.TryGetValue(fileName, out var cachedSound) && cachedSound == currentSound)
+            if (_referenceCountingCache.TryGet(fileName, out var cachedSound) && cachedSound == currentSound)
             {
+                _referenceCountingCache.AddReference(fileName);
                 return currentSound;
             }
-
-            Object.Destroy(cachedSound);
 
             var customSound = LoadAudioClip(fileName);
             if (customSound == null)
@@ -100,12 +98,14 @@ namespace SoundReplacer
                 return Empty;
             }
 
-            return _cache[fileName] = customSound;
+            _referenceCountingCache.Insert(fileName, customSound);
+            return customSound;
         }
 
         public void Unload(SoundType soundType)
         {
-            if (_cache.TryGetValue(GetSoundFileName(soundType), out var cachedSound))
+            var fileName = GetSoundFileName(soundType);
+            if (_referenceCountingCache.TryGet(fileName, out var cachedSound) && _referenceCountingCache.RemoveReference(fileName) == 0)
             {
                 Object.Destroy(cachedSound);
             }
@@ -113,7 +113,7 @@ namespace SoundReplacer
 
         public void Dispose()
         {
-            foreach (var audioClip in _cache.Values)
+            foreach (var audioClip in _referenceCountingCache.values)
             {
                 Object.Destroy(audioClip);
             }
