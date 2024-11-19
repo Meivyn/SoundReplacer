@@ -16,7 +16,7 @@
     <PluginName>SoundReplacer</PluginName>
     <Authors>Otiosum</Authors>
     <Version>2.0.1</Version>
-    <GameVersion>1.29.4</GameVersion>
+    <GameVersion>1.37.4</GameVersion>
     <Description>Easily replace in-game sounds.</Description>
   </PropertyGroup>
 
